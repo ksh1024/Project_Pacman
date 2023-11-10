@@ -13,15 +13,38 @@ using namespace sf;
 
 #define BLOCK_SIZE 50 //한 칸이 가지고 있는 픽셀
 
-class Pacman {
 
+enum GameState {
+	Mainmenu,
+	Playing,
+	GameOver,
+	GameClear
+};
+GameState gameState = Mainmenu; // 메인메뉴 상태로 초기화
+
+//메인메뉴를 그리는 함수
+void DrawMainmenu(RenderWindow& window, Text& start_text, Text& exit_text, int selectedItem) {
+	start_text.setFillColor(selectedItem == 0 ? Color::Yellow : Color::White);
+	exit_text.setFillColor(selectedItem == 1 ? Color::Yellow : Color::White);
+
+	window.draw(start_text);
+	window.draw(exit_text);
+}
+
+class Pacman {
 public:
 	int dir_; //이동 방향
 	int x_;
 	int y_;
 	RectangleShape sprite_;
+	int hearts_ = 5;
 
-
+	// 적과 충돌 시 하트 감소
+	void CollideWithEnemy() {
+		if (hearts_ > 0) {
+			hearts_--;
+		}
+	}
 };
 
 class Enemy {
@@ -55,7 +78,7 @@ public:
 			int randomDir = possibleDirs[randomIndex];
 
 			// 선택한 방향으로 이동
-			if (randomDir == 1) { // 위로 이동
+			if (randomDir == 1) {      // 위로 이동
 				enemy.y_--;
 			}
 			else if (randomDir == 2) { // 아래로 이동
@@ -72,17 +95,6 @@ public:
 
 };
 
-enum GameState {
-	Mainmenu,
-	Playing,
-};
-GameState gameState = Mainmenu; // 메인메뉴 상태로 초기화
-
-//메인메뉴를 그리는 함수
-void DrawMainmenu(RenderWindow& window, Text& start_text) {
-	window.draw(start_text);
-}
-
 class Coin {
 public:
 	int x;
@@ -90,8 +102,8 @@ public:
 	bool isCollected; //코인을 획득했는지 여부
 
 	Coin(int x, int y) : x(x), y(y), isCollected(false) {} //코인 생성자
-
 };
+
 //맵 제어 배열
 	//0 : 이동할 수 있는 곳
 	//1 : 이동 불가능한 곳 (벽)
@@ -116,8 +128,8 @@ bool map_control[18][30] =
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
+
 int main() {
-	
 	
 	//팩맨 이미지 상하좌우
 	Texture pac_up, pac_down, pac_left, pac_right;
@@ -160,6 +172,17 @@ int main() {
 	enemy_1.sprite_.setPosition(enemy_1.x_ * BLOCK_SIZE, enemy_1.y_ * BLOCK_SIZE);
 	enemy_1.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
 
+	Enemy enemy_2;
+	enemy_2.x_ = 14, enemy_2.y_ = 2;
+	enemy_2.dir_ = DIR_RIGHT;
+	enemy_2.sprite_.setTexture(&enemy_img);
+	enemy_2.sprite_.setPosition(enemy_2.x_ * BLOCK_SIZE, enemy_2.y_ * BLOCK_SIZE);
+	enemy_2.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
+
+	Texture heartTexture;
+	heartTexture.loadFromFile("Resource/Image/heart.png");
+	Sprite heartSprite(heartTexture);
+
 
 	// 코인을 그리기 위한 사각형 객체
 	RectangleShape coinShape(Vector2f(BLOCK_SIZE / 4, BLOCK_SIZE / 4)); //블록의 1/4 크기
@@ -190,16 +213,45 @@ int main() {
 	score.setPosition(50, 0);
 
 	Text start_text;
-	start_text.setFillColor(Color::Green);
 	start_text.setFont(font);
 	start_text.setCharacterSize(50);
-	start_text.setString("press enter to start!!!");
-	//center text
-	sf::FloatRect start_textRect = start_text.getLocalBounds();
+	start_text.setString("START");
+	//텍스트 중앙배치
+	FloatRect start_textRect = start_text.getLocalBounds();
 	start_text.setOrigin(start_textRect.width / 2, start_textRect.height / 2);
 	start_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f));
 	
-	
+	Text exit_text;
+	exit_text.setFont(font);
+	exit_text.setCharacterSize(50);
+	exit_text.setString("QUIT");
+	//텍스트 중앙배치
+	FloatRect exit_textRect = exit_text.getLocalBounds();
+	exit_text.setOrigin(exit_textRect.width / 2, exit_textRect.height / 2);
+	exit_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f + 100));
+
+	//현재 선택된 항목 (0: 시작하기, 1: 나가기)
+	int selectedItem = 0;
+
+	Text GameOver_text;
+	GameOver_text.setFillColor(Color::Magenta);
+	GameOver_text.setFont(font);
+	GameOver_text.setCharacterSize(50);
+	GameOver_text.setString("Game Over");
+	//텍스트 중앙배치
+	FloatRect GameOver_textRect = GameOver_text.getLocalBounds();
+	GameOver_text.setOrigin(GameOver_textRect.width / 2, GameOver_textRect.height / 2);
+	GameOver_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f));
+
+	Text GameClear_text;
+	GameClear_text.setFillColor(Color::Magenta);
+	GameClear_text.setFont(font);
+	GameClear_text.setCharacterSize(50);
+	GameClear_text.setString("Game Clear");
+	//텍스트 중앙배치
+	FloatRect GameClear_textRect = GameClear_text.getLocalBounds();
+	GameClear_text.setOrigin(GameClear_textRect.width / 2, GameClear_textRect.height / 2);
+	GameClear_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f));
 	
 
 	while (window.isOpen()) {
@@ -209,16 +261,29 @@ int main() {
 			if (e.type == Event::Closed)
 				window.close();
 		}
-		switch (gameState) {
-		//메인메뉴 그리기
-		case Mainmenu:
-			DrawMainmenu(window, start_text);
-			window.display();
-			//enter를 누를시 시작함
-			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
-				gameState = Playing;
-			}
-			break;
+	switch (gameState) {
+        case Mainmenu:
+            DrawMainmenu(window, start_text, exit_text, selectedItem);
+            window.display();
+
+            if (Keyboard::isKeyPressed(Keyboard::Up) && selectedItem > 0) {
+				cout << selectedItem << endl;
+                selectedItem--;
+            }
+            else if (Keyboard::isKeyPressed(Keyboard::Down) && selectedItem < 1) {
+				cout << selectedItem << endl;
+                selectedItem++;
+            }
+            else if (Keyboard::isKeyPressed(Keyboard::Space)|| Keyboard::isKeyPressed(Keyboard::Enter)) {
+                if (selectedItem == 0) {
+                    gameState = Playing;
+                }
+                else if (selectedItem == 1) {
+                    window.close();
+                }
+            }
+            break;
+
 		case Playing:
 			//방향키가 동시에 눌러지지 않도록 else 처리
 			if (Keyboard::isKeyPressed(Keyboard::Right)) {
@@ -278,24 +343,62 @@ int main() {
 					score.setString("score: " + std::to_string(point));
 				}
 			}
+			
 			pacman.sprite_.setPosition(pacman.x_ * BLOCK_SIZE, pacman.y_ * BLOCK_SIZE);
 			enemy_1.MoveEnemy(enemy_1, map_control);
 			enemy_1.sprite_.setPosition(enemy_1.x_* BLOCK_SIZE, enemy_1.y_* BLOCK_SIZE);
+			enemy_2.MoveEnemy(enemy_2, map_control);
+			enemy_2.sprite_.setPosition(enemy_2.x_* BLOCK_SIZE, enemy_2.y_* BLOCK_SIZE);
+			
+			if (pacman.x_ == enemy_1.x_ && pacman.y_ == enemy_1.y_) {
+				pacman.CollideWithEnemy();
+			}
+			if (pacman.x_ == enemy_2.x_ && pacman.y_ == enemy_2.y_) {
+				pacman.CollideWithEnemy();
+			}
 			
 			window.clear(); //전화면 지우기
+
 			for (const Coin& coin : coins) {
 				if (!coin.isCollected) {
 					coinShape.setPosition(coin.x * BLOCK_SIZE + BLOCK_SIZE / 4, coin.y * BLOCK_SIZE + BLOCK_SIZE / 4); // 코인 위치 설정
 					coinShape.setFillColor(Color(255, 255, 0)); // 코인 색지정
-					// 코인 그리기
-					window.draw(coinShape);
+					window.draw(coinShape); // 코인 그리기
 				}
+			}
+			for (int i = 0; i < pacman.hearts_; ++i) {
+				heartSprite.setPosition(WIDTH - 50 -(i + 1) * 50,0);
+				window.draw(heartSprite); //하트 그리기
+			}
+			if (pacman.hearts_ == 0) {
+				gameState = GameOver;
+			}
+			if (all_of(coins.begin(), coins.end(), [](const Coin& coin) { return coin.isCollected; })) {
+				gameState = GameClear;
 			}
 			window.draw(score); // 점수 텍스트 그리기
 			window.draw(map_sprite);
 			window.draw(pacman.sprite_);
 			window.draw(enemy_1.sprite_);
+			window.draw(enemy_2.sprite_);
 			window.display();
+			break;
+
+		case GameOver:
+			window.clear();
+			window.draw(GameOver_text);
+			window.display();
+			break;
+		case GameClear:
+			window.clear();
+			//텍스트 중앙배치
+			FloatRect scoreRect = score.getLocalBounds();
+			score.setOrigin(scoreRect.width / 2, scoreRect.height / 2);
+			score.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f+100));
+			window.draw(GameClear_text);
+			window.draw(score);
+			window.display();
+			break;
 		}
 	}
 
