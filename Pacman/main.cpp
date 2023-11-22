@@ -27,7 +27,6 @@ GameState gameState = Mainmenu; // 메인메뉴 상태로 초기화
 void DrawMainmenu(RenderWindow& window, Text& start_text, Text& exit_text, int selectedItem) {
 	start_text.setFillColor(selectedItem == 0 ? Color::Green : Color::White); //0(start)선택시 글자색 초록색으로 지정, 아닐시 흰색
 	exit_text.setFillColor(selectedItem == 1 ? Color::Green : Color::White);  //1(exit)선택시 글자색 초록색으로 지정, 아닐시 흰색
-
 	window.draw(start_text);
 	window.draw(exit_text);
 }
@@ -106,8 +105,8 @@ public:
 };
 
 //맵 제어 배열
-	//0 : 이동할 수 있는 곳
-	//1 : 이동 불가능한 곳 (벽)
+//	0 : 이동할 수 있는 곳
+//	1 : 이동 불가능한 곳 (벽)
 //bool map_control[18][30] =
 //{
 //	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -271,12 +270,12 @@ int main() {
 	score.setPosition(50, 0);
 
 	Text GameOver_text;
-	GameOver_text.setFillColor(Color::Magenta);
+	GameOver_text.setFillColor(Color::Red);
 	GameOver_text.setFont(font);
-	GameOver_text.setCharacterSize(50);
+	GameOver_text.setCharacterSize(200);
 	GameOver_text.setString("Game Over");
 	FloatRect GameOver_textRect = GameOver_text.getLocalBounds();
-	GameOver_text.setOrigin(GameOver_textRect.width / 2, GameOver_textRect.height / 2);
+	GameOver_text.setOrigin(GameOver_textRect.width / 2, GameOver_textRect.height);
 	GameOver_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f));
 
 	Text GameClear_text;
@@ -418,6 +417,7 @@ int main() {
 				if (all_of(coins.begin(), coins.end(), [](const Coin& coin) { return coin.isCollected; })) { //코인 모두 획득시 게임 클리어
 					point += pacman.hearts_ * 200; //남은 하트 개수에 따라 추가 점수
 					score.setString("score : " + to_string(point));
+					heartSprite.setScale(2.0f, 2.0f);
 					gameState = GameClear;
 				}
 				window.draw(score);
@@ -439,8 +439,12 @@ int main() {
 				//점수 텍스트 중앙배치
 				FloatRect scoreRect = score.getLocalBounds();
 				score.setOrigin(scoreRect.width / 2, scoreRect.height / 2);
-				score.setPosition(Vector2f(WIDTH / 2.0f, 500));
+				score.setPosition(Vector2f(WIDTH / 2.0f, 450));
 				score.setCharacterSize(100);
+				for (int i = 0; i < pacman.hearts_; ++i) { 
+					heartSprite.setPosition(WIDTH / 2 - (pacman.hearts_ * (100 + 30) - 30) / 2 + i * (100 + 30), 600); //하트 개수에 맞게 가로 중앙 배치
+					window.draw(heartSprite); //남은 하트 그리기
+				}
 				window.draw(GameClear_text);
 				window.draw(score);
 				window.display();
