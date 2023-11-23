@@ -1,6 +1,5 @@
 #include <SFML/Graphics.hpp>
 #include<SFML/Audio.hpp>
-#include <stdio.h>
 #include <iostream>
 #include <string>
 
@@ -13,7 +12,6 @@ using namespace sf;
 #define DIR_LEFT	4
 
 #define BLOCK_SIZE 50 //한 칸이 가지고 있는 픽셀
-
 
 enum GameState {
 	Mainmenu,
@@ -99,17 +97,16 @@ public:
 	void MoveEnemy(Enemy& enemy, bool map_control[18][30]) {
 		// 현재 위치에서 이동 가능한 방향을 저장할 벡터
 		vector<int> possibleDirs;
-
-		if (enemy.y_ > 0 && !map_control[enemy.y_ - 1][enemy.x_]) {
+		if (!map_control[enemy.y_ - 1][enemy.x_]) {
 			possibleDirs.push_back(1); // 1: 위
 		}
-		if (enemy.y_ < 17 && !map_control[enemy.y_ + 1][enemy.x_]) {
+		if (!map_control[enemy.y_ + 1][enemy.x_]) {
 			possibleDirs.push_back(2); // 2: 아래
 		}
-		if (enemy.x_ > 0 && !map_control[enemy.y_][enemy.x_ - 1]) {
+		if (!map_control[enemy.y_][enemy.x_ - 1]) {
 			possibleDirs.push_back(3); // 3: 왼쪽
 		}
-		if (enemy.x_ < 29 && !map_control[enemy.y_][enemy.x_ + 1]) {
+		if (!map_control[enemy.y_][enemy.x_ + 1]) {
 			possibleDirs.push_back(4); // 4: 오른쪽
 		}
 
@@ -148,48 +145,28 @@ public:
 //맵 제어 배열
 //	0 : 이동할 수 있는 곳
 //	1 : 이동 불가능한 곳 (벽)
-//bool map_control[18][30] =
-//{
-//	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-//	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-//	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-//	{1,1,0,1,1,1,0,1,0,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,0,1,1,1,0,1},
-//	{1,1,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,1},
-//	{1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1},
-//	{1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
-//	{1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1},
-//	{1,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,1},
-//	{1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0,1},
-//	{1,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,1,1,1},
-//	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-//	{1,1,0,0,0,0,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,0,1,0,0,0,0,0,1},
-//	{1,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1},
-//	{1,1,0,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,1,1,1,1,1,0,1},
-//	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-//	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-//	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-//};
 bool map_control[18][30] =
 {
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-	{1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	{1,1,0,1,1,1,0,1,0,1,1,1,1,0,0,1,0,0,1,1,1,1,0,1,0,1,1,1,0,1},
+	{1,1,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,1},
+	{1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1},
+	{1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
+	{1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,1},
+	{1,1,1,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,1},
+	{1,1,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0,1},
+	{1,1,1,1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,1,1,1},
+	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+	{1,1,0,0,0,0,0,1,0,0,1,1,1,1,1,0,1,1,1,1,1,0,0,1,0,0,0,0,0,1},
+	{1,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1},
+	{1,1,0,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,1,1,1,1,1,0,1},
+	{1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
+
 int main() {
 
 	Music sound_select; //메뉴 선택 효과음
@@ -247,7 +224,7 @@ int main() {
 
 	Pacman pacman;
 	pacman.x_ = 28, pacman.y_ = 15;//팩맨의 그리드 좌표
-	pacman.dir_ = DIR_LEFT;			//팩맨이 이동하는 방향
+	pacman.dir_ = DIR_LEFT;		   //팩맨이 이동하는 방향
 	pacman.sprite_.setTexture(&pac_left);
 	pacman.sprite_.setPosition(pacman.x_ * BLOCK_SIZE, pacman.y_ * BLOCK_SIZE);
 	pacman.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
@@ -260,16 +237,22 @@ int main() {
 	enemy_1.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
 
 	Enemy enemy_2;
-	enemy_2.x_ = 9, enemy_2.y_ = 7;
+	enemy_2.x_ = 4, enemy_2.y_ = 13;
 	enemy_2.dir_ = DIR_RIGHT;
 	enemy_2.sprite_.setTexture(&enemy_img);
 	enemy_2.sprite_.setPosition(enemy_2.x_ * BLOCK_SIZE, enemy_2.y_ * BLOCK_SIZE);
 	enemy_2.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
 
+	Enemy enemy_3;
+	enemy_3.x_ = 15, enemy_3.y_ = 5;
+	enemy_3.dir_ = DIR_RIGHT;
+	enemy_3.sprite_.setTexture(&enemy_img);
+	enemy_3.sprite_.setPosition(enemy_3.x_ * BLOCK_SIZE, enemy_3.y_ * BLOCK_SIZE);
+	enemy_3.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
+
 	Texture heartTexture;
 	heartTexture.loadFromFile("Resource/Image/heart.png");
 	Sprite heartSprite(heartTexture);
-
 
 	// 코인을 그리기 위한 사각형 객체
 	RectangleShape coinShape(Vector2f(BLOCK_SIZE / 6, BLOCK_SIZE / 6)); //블록의 1/6 크기
@@ -287,6 +270,7 @@ int main() {
 			}
 		}
 	}
+
 	Font font;
 	if (!font.loadFromFile("Resource/Font/pixel.ttf")) {
 		printf("failed to load font file");
@@ -361,13 +345,11 @@ int main() {
 				window.display();
 
 				if (Keyboard::isKeyPressed(Keyboard::Up) && selectedItem > 0) {
-					cout << selectedItem << endl;
 					sound_select.stop();
 					sound_select.play();
 					selectedItem--;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Down) && selectedItem < 1) {
-					cout << selectedItem << endl;
 					sound_select.stop();
 					sound_select.play();
 					selectedItem++;
@@ -376,6 +358,7 @@ int main() {
 					if (selectedItem == 0) {
 						music_game.play(); //음악 재생
 						music_game.setLoop(true); //반복 재생
+						music_game.setVolume(60);  //음악 음량 설정
 						gameState = Playing;
 					}
 					else if (selectedItem == 1) {
@@ -385,23 +368,22 @@ int main() {
 				break;
 
 			case Playing:
-				music_game.setVolume(50);  //음악 음량 설정
 				//방향키가 동시에 눌러지지 않도록 else 처리
 				if (Keyboard::isKeyPressed(Keyboard::Right)) {
 					pacman.dir_ = DIR_RIGHT;
-					cout << "\n누른키 : right\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
+					//cout << "\n누른키 : right\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Left)) {
 					pacman.dir_ = DIR_LEFT;
-					cout << "\n누른키 : left\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
+					//cout << "\n누른키 : left\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Up)) {
 					pacman.dir_ = DIR_UP;
-					cout << "\n누른키 : up\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
+					//cout << "\n누른키 : up\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Down)) {
 					pacman.dir_ = DIR_DOWN;
-					cout << "\n누른키 : down\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
+					//cout << "\n누른키 : down\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				//팩맨 이동
 				if (pacman.dir_ == DIR_UP && pacman.y_ > 1) {
@@ -430,14 +412,6 @@ int main() {
 				if (pacman.dir_ == DIR_RIGHT && map_control[pacman.y_][pacman.x_]) {
 					pacman.x_--;
 				}
-				//좌측 포탈
-				if (pacman.dir_ == DIR_LEFT && pacman.x_ == 2 && pacman.y_ == 9) {
-					pacman.x_ = 28; //우측 포탈로 나옴
-				}
-				//우측 포탈
-				if (pacman.dir_ == DIR_RIGHT && pacman.x_ == 28 && pacman.y_ == 9) {
-					pacman.x_ = 2; //좌측 포탈로 나옴
-				}
 				//코인을 먹을시 점수 올라감
 				for (size_t i = 0; i < coins.size(); i++) {
 					if (pacman.x_ == coins[i].x && pacman.y_ == coins[i].y && !coins[i].isCollected) {
@@ -449,21 +423,35 @@ int main() {
 						sound_coin.play(); //코인 먹을시 효과음 재생
 					}
 				}
+				//좌측 포탈
+				if (pacman.dir_ == DIR_LEFT && pacman.x_ == 2 && pacman.y_ == 9) {
+					pacman.x_ = 29; //우측 포탈로 나옴
+				}
+				//우측 포탈
+				if (pacman.dir_ == DIR_RIGHT && pacman.x_ == 28 && pacman.y_ == 9) {
+					pacman.x_ = 1; //좌측 포탈로 나옴
+				}
 				
 				pacman.UpdateAnimation(pac_def, pac_up, pac_down, pac_left, pac_right);
 				pacman.sprite_.setPosition(pacman.x_ * BLOCK_SIZE, pacman.y_ * BLOCK_SIZE);
+
 				enemy_1.MoveEnemy(enemy_1, map_control); //적 이동 함수 호출
 				enemy_1.sprite_.setPosition(enemy_1.x_* BLOCK_SIZE, enemy_1.y_* BLOCK_SIZE);
 				enemy_2.MoveEnemy(enemy_2, map_control); //적 이동 함수 호출
 				enemy_2.sprite_.setPosition(enemy_2.x_* BLOCK_SIZE, enemy_2.y_* BLOCK_SIZE);
-			
+				enemy_3.MoveEnemy(enemy_3, map_control); //적 이동 함수 호출
+				enemy_3.sprite_.setPosition(enemy_3.x_* BLOCK_SIZE, enemy_3.y_* BLOCK_SIZE);
+
 				if (pacman.x_ == enemy_1.x_ && pacman.y_ == enemy_1.y_) {
 					pacman.CollideWithEnemy(); //적과 충돌시 함수 호출
 				}
 				if (pacman.x_ == enemy_2.x_ && pacman.y_ == enemy_2.y_) {
 					pacman.CollideWithEnemy(); //적과 충돌시 함수 호출
 				}
-			
+				if (pacman.x_ == enemy_3.x_ && pacman.y_ == enemy_3.y_) {
+					pacman.CollideWithEnemy(); //적과 충돌시 함수 호출
+				}
+
 				window.clear(); //전화면 지우기
 
 				for (const Coin& coin : coins) {
@@ -497,6 +485,7 @@ int main() {
 				window.draw(pacman.sprite_);
 				window.draw(enemy_1.sprite_);
 				window.draw(enemy_2.sprite_);
+				window.draw(enemy_3.sprite_);
 				window.display();
 				break;
 
