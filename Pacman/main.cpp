@@ -39,12 +39,53 @@ public:
 	RectangleShape sprite_;
 	int hearts_ = 5; //하트 (생명)
 
+	Music sound_collide; //적과 충돌시 효과음
+	
+	Pacman() {
+		if (!sound_collide.openFromFile("Resource/Sound/crash.wav")) {
+			cerr << "Failed to load music" << endl;
+		}
+	}
+
 	// 적과 충돌 시 하트 감소
 	void CollideWithEnemy() {
 		if (hearts_ > 0) { //하트가 한개 이상 남아있을시
 			hearts_--;     //하트 하나 줄어듬
+			sound_collide.setVolume(30);
+			sound_collide.stop();
+			sound_collide.play();
 		}
 	}
+
+	Clock animationClock;		//애니메이션 속도 제어
+	float animationTime = 0.2f; //애니메이션 프레임 간 시간 간격
+	Time elapsedTime;			//함수 호출 간 경과 시간
+	bool mouthOpen = false;		//입이 열려있는지 닫혀있는지 여부
+
+	//입을 벌렸다 닫는 애니메이션
+	void UpdateAnimation(Texture& pac_def, Texture& pac_up, Texture& pac_down, Texture& pac_left, Texture& pac_right) {
+		elapsedTime += animationClock.restart();
+		if (elapsedTime.asSeconds() >= animationTime) {
+			//경과 시간 초기화
+			elapsedTime = Time::Zero;
+			//이동 방향에 따라 팩맨 텍스처 변경
+			if (dir_ == DIR_UP) {
+				sprite_.setTexture(mouthOpen ? &pac_up : &pac_def);
+			}
+			else if (dir_ == DIR_DOWN) {
+				sprite_.setTexture(mouthOpen ? &pac_down : &pac_def);
+			}
+			else if (dir_ == DIR_LEFT) {
+				sprite_.setTexture(mouthOpen ? &pac_left : &pac_def);
+			}
+			else if (dir_ == DIR_RIGHT) {
+				sprite_.setTexture(mouthOpen ? &pac_right : &pac_def);
+			}
+			//다음 프레임을 위해 mouthOpen 상태 전환
+			mouthOpen = !mouthOpen;
+		}
+	}
+
 };
 
 class Enemy {
@@ -150,27 +191,46 @@ bool map_control[18][30] =
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 int main() {
-	int test=0;
-	Music music; //배경 음악
-	if (!music.openFromFile("Resource/Sound/music.wav")) {
-		std::cerr << "Failed to load music" << std::endl;
+
+	Music sound_select; //메뉴 선택 효과음
+	if (!sound_select.openFromFile("Resource/Sound/select.wav")) {
+		cerr << "Failed to load music" << endl;
 		return -1;
 	}
-	music.setVolume(50);  //음악 음량 설정
-	//music.play(); //음악 재생
+	Music music_game; //게임 배경 음악
+	if (!music_game.openFromFile("Resource/Sound/gameplay.wav")) {
+		cerr << "Failed to load music" << endl;
+		return -1;
+	}
+	Music sound_coin; //코인 획득시 효과음
+	if (!sound_coin.openFromFile("Resource/Sound/coin.wav")) {
+		cerr << "Failed to load music" << endl;
+		return -1;
+	}
+	Music music_gameover; //게임 오버 음악
+	if (!music_gameover.openFromFile("Resource/Sound/gameover.wav")) {
+		cerr << "Failed to load music" << endl;
+		return -1;
+	}
+	Music music_gameclear; //게임 클리어시 음악
+	if (!music_gameclear.openFromFile("Resource/Sound/gameclear.wav")) {
+		cerr << "Failed to load music" << endl;
+		return -1; 
+	}
 
-	//팩맨 이미지 상하좌우
-	Texture pac_up, pac_down, pac_left, pac_right;
+	//팩맨 텍스쳐 기본, 상하좌우
+	Texture pac_def, pac_up, pac_down, pac_left, pac_right;
+	pac_def.loadFromFile("Resource/Image/pacman_closed.png");
 	pac_up.loadFromFile("Resource/Image/pacman_up.png");
 	pac_down.loadFromFile("Resource/Image/pacman_down.png");
 	pac_left.loadFromFile("Resource/Image/pacman_left.png");
 	pac_right.loadFromFile("Resource/Image/pacman_right.png");
 
-
+	//적 텍스쳐
 	Texture enemy_img;
 	enemy_img.loadFromFile("Resource/Image/enemy.png");
 
-	//맵 이미지
+	//맵 텍스쳐
 	Texture map;
 	map.loadFromFile("Resource/Image/map.png");
 
@@ -187,11 +247,10 @@ int main() {
 
 	Pacman pacman;
 	pacman.x_ = 28, pacman.y_ = 15;//팩맨의 그리드 좌표
-	pacman.dir_ = DIR_LEFT;		//팩맨이 이동하는 방향
+	pacman.dir_ = DIR_LEFT;			//팩맨이 이동하는 방향
 	pacman.sprite_.setTexture(&pac_left);
 	pacman.sprite_.setPosition(pacman.x_ * BLOCK_SIZE, pacman.y_ * BLOCK_SIZE);
 	pacman.sprite_.setSize(Vector2f(BLOCK_SIZE, BLOCK_SIZE));
-
 
 	Enemy enemy_1;
 	enemy_1.x_ = 28, enemy_1.y_ = 2;
@@ -230,11 +289,11 @@ int main() {
 	}
 	Font font;
 	if (!font.loadFromFile("Resource/Font/pixel.ttf")) {
-		printf("폰트 불러오기 실패");
+		printf("failed to load font file");
 		return -1;
 	}
 
-	//현재 선택된 항목 (0: 시작하기, 1: 나가기)
+	//현재 선택된 항목 (0 : 시작하기, 1 : 나가기)
 	int selectedItem = 0;
 
 	Text title;
@@ -273,7 +332,7 @@ int main() {
 	GameOver_text.setFillColor(Color::Red);
 	GameOver_text.setFont(font);
 	GameOver_text.setCharacterSize(200);
-	GameOver_text.setString("Game Over");
+	GameOver_text.setString("GAME OVER");
 	FloatRect GameOver_textRect = GameOver_text.getLocalBounds();
 	GameOver_text.setOrigin(GameOver_textRect.width / 2, GameOver_textRect.height);
 	GameOver_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f));
@@ -282,7 +341,7 @@ int main() {
 	GameClear_text.setFillColor(Color::Magenta);
 	GameClear_text.setFont(font);
 	GameClear_text.setCharacterSize(200);
-	GameClear_text.setString("Game Clear");
+	GameClear_text.setString("GAME CLEAR");
 	FloatRect GameClear_textRect = GameClear_text.getLocalBounds();
 	GameClear_text.setOrigin(GameClear_textRect.width / 2, GameClear_textRect.height / 2);
 	GameClear_text.setPosition(Vector2f(WIDTH / 2.0f, HEIGHT / 2.0f - 200));
@@ -303,14 +362,20 @@ int main() {
 
 				if (Keyboard::isKeyPressed(Keyboard::Up) && selectedItem > 0) {
 					cout << selectedItem << endl;
+					sound_select.stop();
+					sound_select.play();
 					selectedItem--;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Down) && selectedItem < 1) {
 					cout << selectedItem << endl;
+					sound_select.stop();
+					sound_select.play();
 					selectedItem++;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Space)|| Keyboard::isKeyPressed(Keyboard::Enter)) {
 					if (selectedItem == 0) {
+						music_game.play(); //음악 재생
+						music_game.setLoop(true); //반복 재생
 						gameState = Playing;
 					}
 					else if (selectedItem == 1) {
@@ -320,25 +385,22 @@ int main() {
 				break;
 
 			case Playing:
+				music_game.setVolume(50);  //음악 음량 설정
 				//방향키가 동시에 눌러지지 않도록 else 처리
 				if (Keyboard::isKeyPressed(Keyboard::Right)) {
 					pacman.dir_ = DIR_RIGHT;
-					pacman.sprite_.setTexture(&pac_right);
 					cout << "\n누른키 : right\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Left)) {
 					pacman.dir_ = DIR_LEFT;
-					pacman.sprite_.setTexture(&pac_left);
 					cout << "\n누른키 : left\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Up)) {
 					pacman.dir_ = DIR_UP;
-					pacman.sprite_.setTexture(&pac_up);
 					cout << "\n누른키 : up\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::Down)) {
 					pacman.dir_ = DIR_DOWN;
-					pacman.sprite_.setTexture(&pac_down);
 					cout << "\n누른키 : down\nx : " << pacman.x_ << "\ny : " << pacman.y_ << endl;
 				}
 				//팩맨 이동
@@ -380,11 +442,15 @@ int main() {
 				for (size_t i = 0; i < coins.size(); i++) {
 					if (pacman.x_ == coins[i].x && pacman.y_ == coins[i].y && !coins[i].isCollected) {
 						coins[i].isCollected = true;
-						point += 10;
+						point += 30;
 						// 포인트 변수(int)를 문자열로 변환후 score의 string을 업데이트
 						score.setString("score : " + to_string(point));
+						sound_coin.stop();
+						sound_coin.play(); //코인 먹을시 효과음 재생
 					}
 				}
+				
+				pacman.UpdateAnimation(pac_def, pac_up, pac_down, pac_left, pac_right);
 				pacman.sprite_.setPosition(pacman.x_ * BLOCK_SIZE, pacman.y_ * BLOCK_SIZE);
 				enemy_1.MoveEnemy(enemy_1, map_control); //적 이동 함수 호출
 				enemy_1.sprite_.setPosition(enemy_1.x_* BLOCK_SIZE, enemy_1.y_* BLOCK_SIZE);
@@ -412,12 +478,18 @@ int main() {
 					window.draw(heartSprite); //하트 그리기
 				}
 				if (pacman.hearts_ == 0) { //하트가 0개 되면 게임 오버
+					music_game.stop();	   //음악 끄기
+					music_gameover.setVolume(30);  //음악 음량 설정
+					music_gameover.play(); //음악 재생
 					gameState = GameOver; 
 				}
 				if (all_of(coins.begin(), coins.end(), [](const Coin& coin) { return coin.isCollected; })) { //코인 모두 획득시 게임 클리어
-					point += pacman.hearts_ * 200; //남은 하트 개수에 따라 추가 점수
+					point += pacman.hearts_ * 500; //남은 하트 개수에 따라 추가 점수
 					score.setString("score : " + to_string(point));
 					heartSprite.setScale(2.0f, 2.0f);
+					music_game.stop(); //음악 끄기
+					music_gameclear.setVolume(30);  //음악 음량 설정
+					music_gameclear.play(); //음악 재생
 					gameState = GameClear;
 				}
 				window.draw(score);
